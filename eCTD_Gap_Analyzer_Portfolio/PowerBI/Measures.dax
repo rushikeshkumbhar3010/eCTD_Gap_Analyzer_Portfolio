@@ -1,0 +1,60 @@
+// eCTD Module 3 Gap Analyzer - DAX measures
+// Tables loaded from eCTD_Gap_Analyzer_Simulated_Data.xlsx: Documents, Findings, Defects, Regional, Guidelines
+// Relationships (single direction, one-to-many):
+//   Documents[DocID] -> Findings[DocID]
+//   Documents[DocID] -> Defects[DocID]
+//   Documents[DocID] -> Regional[DocID]
+// Create a disconnected table first:  Threshold = GENERATESERIES(0.5, 1, 0.05)
+
+// ---------- Core counts ----------
+Documents Audited = DISTINCTCOUNT ( Findings[DocID] )
+
+Total Checks = COUNTROWS ( Findings )
+
+Missing = CALCULATE ( COUNTROWS ( Findings ), Findings[Status] = "Missing" )
+
+Partial = CALCULATE ( COUNTROWS ( Findings ), Findings[Status] = "Partial" )
+
+Compliant = CALCULATE ( COUNTROWS ( Findings ), Findings[Status] = "Compliant" )
+
+// ---------- Score, gate, verdict (same rules as the tool) ----------
+Compliance Score = DIVIDE ( [Compliant] + 0.5 * [Partial], [Total Checks] )
+
+Gate Threshold = SELECTEDVALUE ( Threshold[Value], 0.9 )
+
+Verdict =
+IF ( [Missing] >= 4, "Major RTF Risk",
+    IF ( OR ( [Missing] >= 1, [Partial] >= 3 ), "Minor Revision Required", "Ready to File" ) )
+
+Gate Result = IF ( AND ( [Compliance Score] >= [Gate Threshold], [Missing] = 0 ), "PASS", "FAIL" )
+
+Docs Passing Gate =
+SUMX (
+    VALUES ( Documents[DocID] ),
+    IF ( AND ( [Compliance Score] >= [Gate Threshold], [Missing] = 0 ), 1, 0 )
+)
+
+Average Doc Score = AVERAGEX ( VALUES ( Documents[DocID] ), [Compliance Score] )
+
+Gap Rate = DIVIDE ( [Missing] + [Partial], [Total Checks] )
+
+// ---------- Conditional-format helpers (Format > Conditional formatting > Field value) ----------
+Verdict Color =
+SWITCH ( [Verdict], "Ready to File", "#1A7F37", "Minor Revision Required", "#B26A00", "#C62828" )
+
+Score Color =
+IF ( [Compliance Score] >= [Gate Threshold], "#1A7F37", IF ( [Compliance Score] >= 0.6, "#B26A00", "#C62828" ) )
+
+// ---------- Defect validation ----------
+True Positives = SUM ( Defects[TP] )
+False Positives = SUM ( Defects[FP] )
+False Negatives = SUM ( Defects[FN] )
+Precision = DIVIDE ( [True Positives], [True Positives] + [False Positives] )
+Recall = DIVIDE ( [True Positives], [True Positives] + [False Negatives] )
+
+// ---------- Regional ----------
+Regional Score = AVERAGE ( Regional[Score] )
+Regional Missing = SUM ( Regional[Missing] )
+Regional Runs = COUNTROWS ( Regional )
+Authorities With Major Risk =
+CALCULATE ( DISTINCTCOUNT ( Regional[Authority] ), Regional[Verdict] = "Major RTF Risk" )

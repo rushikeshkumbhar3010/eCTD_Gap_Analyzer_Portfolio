@@ -1,0 +1,66 @@
+{
+  "name": "eCTD Gap Analyzer",
+  "dataColors": [
+    "#0B5CAD",
+    "#1A7F37",
+    "#B26A00",
+    "#C62828",
+    "#5AA2EE",
+    "#0A3560",
+    "#7A8794",
+    "#E0A030"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#1B1F24",
+  "tableAccent": "#0A3560",
+  "good": "#1A7F37",
+  "neutral": "#B26A00",
+  "bad": "#C62828",
+  "maximum": "#1A7F37",
+  "center": "#B26A00",
+  "minimum": "#C62828",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 14,
+      "color": "#1B1F24"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 10,
+      "color": "#5B6573"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 28,
+      "color": "#0A3560"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#D9DDE3"
+              }
+            },
+            "radius": 6
+          }
+        ]
+      }
+    }
+  }
+}
